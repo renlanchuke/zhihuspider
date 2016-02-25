@@ -258,8 +258,22 @@ exports.sendMail = function (subject, body, callback) {
         subject: subject,
         html: body
     };
-    var smtpTransport = nodemailer.createTransport('SMTP', mailsender);
+    //var smtpTransport = nodemailer.createTransport('SMTP', mailsender);
 
+    //SMTP Configured.
+    var smtpTransport = nodemailer.createTransport("SMTP", {
+        host: 'smtp.163.com',
+        secureConnection: true,
+        port: 465,
+        auth: {
+            user: '123456@163.com',
+            pass: '123456'
+        },
+        tls: {
+            secureProtocol: "TLSv1_method"
+        }
+    });
+    
     smtpTransport.sendMail(mailOptions, function (error, response) {
         if (error) {
             callback(error);
