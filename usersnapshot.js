@@ -15,7 +15,7 @@ var xsrf;//sessionid
 
 var users = new Array();//用户列表
 var _usercursor = 0;//用户游标
-var maxthreadcount = 12;//最大读取线程数
+var maxthreadcount = 6;//最大读取线程数
 var threadcount;//实际线程数
 var threadstatus;//线程状态数组
 var firstthreadstoptime = 0;//首个线程停止时间
@@ -163,7 +163,7 @@ function getSingleUserInfo(threadnum, callback, cursor, retry) {
         var r = new Object();
         r.uid = user.tid;
         r.id = user.id;
-        var $ = cheerio.load(data, {decodeEntities: false});
+        var $ = cheerio.load(data, { decodeEntities: false });
         var header = $(".zm-profile-header");
         r.name = header.find(".title-section .name").text();
         r.signature = header.find(".title-section .bio").text();
@@ -193,8 +193,8 @@ function getSingleUserInfo(threadnum, callback, cursor, retry) {
         }
         else
             r.stopped = 0;
-
-        if (r.agree > 0 && r.follower == 0 && !fixed) {//如果发现用户有赞同但关注数为0，可能是网络错误导致的，需要再读一次（如果修复后还为0就不处理了）
+        //如果发现用户有赞同但关注数为0，可能是网络错误导致的，需要再读一次（如果修复后还为0就不处理了
+        if (r.agree > 0 && r.follower == 0 && !fixed) {
             getUserError(threadnum, user.tid + " Cannot read user " + user.id + " 's follower.", user, callback);
             return;
         }
@@ -299,6 +299,7 @@ function getTopAnswers(r, page, alist, callback, retry) {
     logger.debug("Getting user " + r.id + "'s top answer page " + page + ".");
     tools.get(config.urlpre + "people/" + encodeURIComponent(r.id) + "/answers?order_by=vote_num&page=" + page, cookie, function (err, data) {
         if (err) {
+            
             //如果失败则重试，超出重试次数则返回
             retry++;
             logger.error("Get user " + r.id + "'s top answer page " + page + " error:" + err);
@@ -311,7 +312,7 @@ function getTopAnswers(r, page, alist, callback, retry) {
             return;
         }
         //解析答案列表
-        var $ = cheerio.load(data, {decodeEntities: false});
+        var $ = cheerio.load(data, { decodeEntities: false });
         var answerlist = $("#zh-profile-answer-list .zm-item");
         var pagealist = new Array();//当前页答案
         var getanswerfailed = false;//执行each的过程中是否出错，出错则整页重读
@@ -352,7 +353,7 @@ function getTopAnswers(r, page, alist, callback, retry) {
                 a.len = text.length;
                 pagealist.push(a);
             }
-        })
+        });
 
         //如果前一步中出现任何错误则重读当前页，超出重试次数则返回
         if (getanswerfailed) {
@@ -366,6 +367,8 @@ function getTopAnswers(r, page, alist, callback, retry) {
                 }, faildelay);
             return;
         }
+        
+        logger.log("读取用户高票答案成功!");
 
         alist = alist.concat(pagealist);
 
@@ -404,7 +407,7 @@ function getPosts(r, callback) {
                 return;
             }
 
-            var $ = cheerio.load(data, {decodeEntities: false});
+            var $ = cheerio.load(data, { decodeEntities: false });
             var columns = $(".profile-column-posts>.column");
             var links = new Array();
             columns.each(function (i) {
@@ -635,7 +638,7 @@ function fixUseridByHash(userlist, cursor, callback) {
             if (err)
                 logger.error(user.tid + " read user page by hash error:" + err);
             else {
-                var $ = cheerio.load(data, {decodeEntities: false});
+                var $ = cheerio.load(data, { decodeEntities: false });
                 var detailhref = $(".zm-profile-header a.zm-profile-header-user-detail").attr("href");//通过链接读取用户id
                 if (!detailhref) {
                     logger.error(user.tid + " cannot get user id by hash: " + err);//可能会失败，失败则忽略

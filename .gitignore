@@ -26,5 +26,15 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 
-# Webstorm
-.idea
+# vs code
+jsconfig.json
+.vscode
+
+#config.js will not update unless the privacy information was removed
+config.js
+
+#log file
+log.txt
+
+#jshint
+.jshintrc

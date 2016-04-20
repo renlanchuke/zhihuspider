@@ -30,17 +30,20 @@ exports.get = function (url, cookie, callback, retry) {
     };
 
     request({
-            url: url,
-            headers: headers,
-            timeout: 15000,
-            encoding: null
-        },
+        url: url,
+        headers: headers,
+        timeout: 15000,
+        encoding: null
+    },
         function (error, response, data) {
+           // console.log("error: "+error);
             if (!error && response.statusCode == 200) {
+
                 var buffer = new Buffer(data);
                 var encoding = response.headers['content-encoding'];
                 if (encoding == 'gzip') {
                     zlib.gunzip(buffer, function (err, decoded) {
+                        //console.log("err: "+ err);
                         callback(err && ('unzip error' + err), decoded && decoded.toString());
                     });
                 } else if (encoding == 'deflate') {
@@ -48,6 +51,7 @@ exports.get = function (url, cookie, callback, retry) {
                         callback(err && ('deflate error' + err), decoded && decoded.toString());
                     })
                 } else {
+
                     callback(null, buffer.toString());
                 }
             }
@@ -76,12 +80,12 @@ exports.post = function (url, cookie, body, callback, retry) {
     };
 
     request.post({
-            url: url,
-            headers: headers,
-            encoding: null,
-            timeout: 15000,
-            body: body
-        },
+        url: url,
+        headers: headers,
+        encoding: null,
+        timeout: 15000,
+        body: body
+    },
         function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 var buffer = new Buffer(data);
@@ -136,7 +140,7 @@ exports.getAvatar = function (avatarurl, callback, retry) {
         }
     }
 
-    request({method: 'GET', url: avatarurl, encoding: null},
+    request({method: 'GET', url: avatarurl, encoding: null },
         function (error, response, data) {
             if (!error && response.statusCode == 200) {
                 fs.writeFileSync(config.avatarPath + filepath, data, 'binary');
@@ -266,14 +270,14 @@ exports.sendMail = function (subject, body, callback) {
         secureConnection: true,
         port: 465,
         auth: {
-            user: '123456@163.com',
-            pass: '123456'
+            user: config.mailuser,
+            pass: config.mailpass
         },
         tls: {
             secureProtocol: "TLSv1_method"
         }
     });
-    
+
     smtpTransport.sendMail(mailOptions, function (error, response) {
         if (error) {
             callback(error);
@@ -334,7 +338,7 @@ exports.spliceAvatars = function (avatars, rowcount, colcount, random, norepeat,
         if (norepeat && addedavatars.indexOf(avatars[i]) != -1) continue;
         try {
             var avatarpath;
-            if (avatars[i].indexOf("https://") == 0)  avatarpath =avatars[i].replace("https://", config.avatarPath);
+            if (avatars[i].indexOf("https://") == 0) avatarpath = avatars[i].replace("https://", config.avatarPath);
             else avatarpath = avatars[i].replace("http://", config.avatarPath);
 
             var avaimg = images(avatarpath);
@@ -345,7 +349,7 @@ exports.spliceAvatars = function (avatars, rowcount, colcount, random, norepeat,
                 currentrow = 0;
                 currentcol++;
             }
-            if (currentcol >= colcount)  break;
+            if (currentcol >= colcount) break;
         }
         catch (err) {//出错不处理，直接跳到下张图片
             logger.debug("img file not exist: " + avatars[i] + " err:" + err);
@@ -353,7 +357,7 @@ exports.spliceAvatars = function (avatars, rowcount, colcount, random, norepeat,
     }
 
     try {
-        var buffer = outimg.encode("jpg", {quality: 70});
+        var buffer = outimg.encode("jpg", { quality: 70 });
         callback(null, buffer);
     }
     catch (err) {
@@ -363,7 +367,7 @@ exports.spliceAvatars = function (avatars, rowcount, colcount, random, norepeat,
 
 //获取wordpress客户端命令对象
 function WPcommand(command, postbody, callback) {
-    var clientOptions = {host: config.WPurl, port: 80, path: '/xmlrpc.php'};
+    var clientOptions = { host: config.WPurl, port: 80, path: '/xmlrpc.php' };
     var client = xmlrpc.createClient(clientOptions);
     client.methodCall(command, postbody, callback);
 }
@@ -387,7 +391,7 @@ exports.WPnewPost = function (publishdata, callback) {
         'post_status': publishdata.isdraft ? 'draft' : 'publish',
         'comment_status': 'open',
         'post_date_gmt': new Date(publishdata.publishtime.setHours(publishdata.publishtime.getHours() - 8)),//按GMT+8的时区发布
-        'terms_names': {'category': [publishdata.category]},
+        'terms_names': { 'category': [publishdata.category] },
         'post_content': publishdata.content
     };
     if (publishdata.sticky) content.sticky = publishdata.sticky;

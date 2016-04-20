@@ -40,6 +40,7 @@ function trygetcookie(retry, callback) {
 
         var $ = cheerio.load(data, {decodeEntities: false});
         var findname = $(".zu-top-nav-userinfo .name").html();//寻找已登录用户名，如果找不到说明cookie失效，登录失败
+        //console.log(findname);//debug
         if (findname != cookieuser.name) {
             if (retry >= maxretry)
                 callback("Invalid cookie.");

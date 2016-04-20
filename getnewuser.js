@@ -23,7 +23,7 @@ var userfilteroptions = {
     ratio: 0
 };
 //连续抓取的间隔
-var delay = 100;
+var delay = 1000;
 
 //开始抓取
 exports.start = function (c, x, callback) {
